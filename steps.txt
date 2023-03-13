@@ -1,4 +1,4 @@
-#terminator全广播状态ssh远端连接多分割些终端  或者组内广播改名 
+#terminator全广播状态ssh远端连接多分割些终端 7个 或者组内广播改名 
 ssh amao@fast-drone  
 
 cd Fast-Drone-250
@@ -24,3 +24,44 @@ sh shfiles/record.sh   #记录一下
 
 #在远程桌面中指点运行
 roslaunch ego_planner rviz.launch 
+
+
+
+
+
+
+
+########################################
+utils
+
+
+
+检查realsense图像，(视野里出现护桨导致建图前方始终有障碍物)
+#########################################
+检查realsense驱动正常
+roslaunch realsense2_camera rs_camera.launch
+进入远程桌面，rqt_image_view
+查看/camera/infra1/image_rect_raw,/camera/infra2/image_rect_raw,/camera/depth/image_rect_raw话题正常
+#########################################
+
+
+
+标定VINS
+#########################################
+修改fast-drone-250.yaml的body_T_cam0和body_T_cam1的data矩阵的第四列为你的无人机上的相机相对于飞控的实际外参，单位为米，顺序为x/y/z，第四项是1，不用改
+x:49mm y:28.2  z:59.9
+       y:-18.3 
+VINS外参精确自标定
+
+sh shfiles/rspx4.sh
+rostopic echo /vins_fusion/imu_propagate
+拿起飞机沿着场地尽量缓慢地行走，场地内光照变化不要太大，灯光不要太暗，不要使用会频闪的光源，尽量多放些杂物来增加VINS用于匹配的特征点
+把vins_output/extrinsic_parameter.txt里的内容替换到fast-drone-250.yaml的body_T_cam0和body_T_cam1
+重复上述操作直到走几圈后VINS的里程计数据偏差收敛到满意值（一般在0.3米内）
+#########################################
+
+
+
+
+
+
