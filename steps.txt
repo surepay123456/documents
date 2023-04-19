@@ -1,3 +1,5 @@
+egoplanner试飞行
+########################################
 #terminator全广播状态ssh远端连接多分割些终端 7个 或者组内广播改名 
 ssh amao@fast-drone  
 
@@ -24,17 +26,10 @@ sh shfiles/record.sh   #记录一下
 
 #在远程桌面中指点运行
 roslaunch ego_planner rviz.launch 
-
-
-
-
-
-
-
 ########################################
-utils
 
-
+realsense_utils
+########################################
 
 检查realsense图像，(视野里出现护桨导致建图前方始终有障碍物)
 #########################################
@@ -59,6 +54,58 @@ rostopic echo /vins_fusion/imu_propagate
 把vins_output/extrinsic_parameter.txt里的内容替换到fast-drone-250.yaml的body_T_cam0和body_T_cam1
 重复上述操作直到走几圈后VINS的里程计数据偏差收敛到满意值（一般在0.3米内）
 #########################################
+
+
+
+测试控制
+#########################################
+#拨通道5，6 并且1，2，3，4通道回中(遥控器按End进入舵量查看)，5通道hover模式，6通道cmd模式
+
+roslaunch px4ctrl run_ctrl.launch   #启动控制程序
+
+sh shfiles/takeoff.sh         #自动起飞  (不推荐，自动起飞没有估计油门推力，出现过后撤步的情况，推荐使用自稳起飞，然后再切定点
+
+#如果起飞时看推力模型比例，通过话题 rostopic echo /debugPx4ctrl 来看
+
+local_map与global_map联合更新的问题。出现近处的更新只有一角
+#########################################
+
+
+自主探索
+#########################################
+
+terminator开6个终端
+广播
+ssh amao@fast-drone  
+cd fuel/
+source devel/setup.bash
+
+定位
+cd src/FUEL
+sh shfiles/rspx4.sh 
+
+记录消息
+cd src/FUEL
+sh shfiles/record.sh 
+
+查询定位
+rostopic echo /vins_fusion/imu_propagate
+
+启动控制
+roslaunch px4ctrl run_ctrl.launch  
+随后手动起飞进入定点
+
+启动探索
+script **.log
+source devel/setup.bash
+roslaunch exploration_manager exloration_exp.launch
+
+远程桌面
+roslaunch exploration_manager rviz.launch
+#########################################
+
+
+
 
 
 
